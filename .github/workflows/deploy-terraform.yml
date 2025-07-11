@@ -1,0 +1,64 @@
+name: "Terraform Plan Apply"
+
+on:
+  workflow_dispatch:
+    branches: ['main']
+
+env:
+  BACKEND_RG: ${{ vars.BACKEND_RG }}
+  BACKEND_SA: ${{ vars.BACKEND_SA }}
+  BACKEND_CN: "thomas-demo"
+  BACKEND_KEY: "terraform.tfstate"
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+
+jobs:
+  terraform-plan:
+    name: "Terraform Plan"
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Connect to Github
+        uses: de-vri-es/setup-git-credentials@v2
+        with:
+          credentials: https://${{secrets.MODULE_TOKEN}}@github.com
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Login with AZ CLI
+        uses: azure/CLI@v1
+        id: azclilogin
+        with:
+          inlineScript: |
+            az login --service-principal --username ${{ env.ARM_CLIENT_ID }} --password ${{ env.ARM_CLIENT_SECRET }} --tenant ${{ env.ARM_TENANT_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        shell: bash
+        working-directory: ./azure
+        run: |
+          terraform init -upgrade \
+              -backend-config="subscription_id=${{ env.ARM_SUBSCRIPTION_ID }}" \
+              -backend-config="resource_group_name=${{ env.BACKEND_RG }}" \
+              -backend-config="storage_account_name=${{ env.BACKEND_SA }}" \
+              -backend-config="container_name=${{ env.BACKEND_CN }}" \
+              -backend-config="key=${{ env.BACKEND_KEY }}" \
+              -backend-config="tenant_id=${{ env.ARM_TENANT_ID }}"
+
+      - name: Terraform Plan
+        shell: bash
+        working-directory: ./azure
+        run: |
+          terraform plan -input=false
+
+      - name: Terraform Apply
+        shell: bash
+        working-directory: ./azure
+        run: |
+          terraform apply -input=false -auto-approve
