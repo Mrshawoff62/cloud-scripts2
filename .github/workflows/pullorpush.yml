@@ -1,0 +1,24 @@
+name: Exercice 2 - Pull or Push
+
+on: 
+  push:
+  pull_request:
+
+env:
+  PUSH_MSG: "C'est un push !"
+  PR_MSG: "C'est une pull request !"
+
+jobs:
+  say_push:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: Afficher message push
+        run: echo "$PUSH_MSG"
+
+  say_pr:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - name: Afficher message pull request
+        run: echo "$PR_MSG"
