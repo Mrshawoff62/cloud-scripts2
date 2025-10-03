@@ -1,0 +1,18 @@
+name: Workflows Liés
+
+on:
+  workflow_dispatch:
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Premier job
+        run: echo "Job 1 exécuté"
+
+  job2:
+    needs: job1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Second job
+        run: echo "Job 2 exécuté après Job 1"
