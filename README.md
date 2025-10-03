@@ -14,3 +14,4 @@ TF_VAR_subscription_id
 
 Une fois créé, il faudra lancer le script ps1 pour que Terraform puisse lire les variables !
 
+test
