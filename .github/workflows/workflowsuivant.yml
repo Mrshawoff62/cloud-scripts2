@@ -2,7 +2,7 @@ name: Workflow Suivant
 
 on:
   workflow_run:
-    workflows: ["Merge PR"]
+    workflows: [Merge PR]
     types:
       - completed
 
